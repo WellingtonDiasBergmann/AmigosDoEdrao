@@ -1,4 +1,4 @@
-package vie;
+package view;
 
 /**
  *
