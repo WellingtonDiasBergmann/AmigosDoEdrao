@@ -1,187 +1,3 @@
-package com.example.server;
-
-import com.example.common.model.Anexo;
-import com.example.common.model.Equipe;
-import com.example.common.model.Pessoa;
-import com.example.common.model.Projeto;
-import com.example.common.model.Tarefa;
-import com.example.common.service.AnexoCRUDService;
-import com.example.common.service.EquipeCRUDService;
-import com.example.common.service.PessoaCRUDService;
-import com.example.common.service.ProjetoCRUDService;
-import com.example.common.service.TarefaCRUDService;
-import com.example.common.utils.RequestObject;
-import com.example.common.utils.ResponseObject;
-import java.io.EOFException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-
-
-public class ServerMain {
-
-    public static final int PORT = 8080;
-
-    private static final PessoaCRUDService pessoaService = new PessoaCRUDService();
-    private static final EquipeCRUDService equipeService = new EquipeCRUDService();
-    private static final ProjetoCRUDService projetoService = new ProjetoCRUDService();
-    private static final TarefaCRUDService tarefaService = new TarefaCRUDService();
-    private static final AnexoCRUDService anexoService = new AnexoCRUDService();
-    private static final String TERMINATION_STRING = "TERMINATION_SIGNAL";
-    
-    public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Servidor iniciado na porta " + PORT);
-
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                new Thread(() -> handleClient(clientSocket)).start();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void handleClient(Socket clientSocket) {
-    try (ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream())) {
-        // Logando a conexão do cliente
-        System.out.println("Cliente conectado: " + clientSocket.getRemoteSocketAddress());
-
-        while (true) { // Mantenha a conexão aberta
-            RequestObject request = (RequestObject) in.readObject();
-
-            // Logando a requisição recebida
-            System.out.println("Requisição recebida: " + request.getOperation());
-
-            ResponseObject response = processRequest(request);
-            out.writeObject(response);
-        }
-        
-    } catch (EOFException e) {
-        System.out.println("Conexão finalizada pelo cliente");
-        e.printStackTrace();
-    } catch (Exception e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            clientSocket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-    private static ResponseObject processRequest(RequestObject request) {
-        try {
-            switch (request.getOperation()) {
-                // Pessoa operations
-                case "criarPessoa":
-                    pessoaService.criar((Pessoa) request.getData());
-                    return new ResponseObject(true, "Pessoa criada com sucesso", null);
-                case "lerPessoa":
-                    return new ResponseObject(true, "", pessoaService.ler((int) request.getData()));
-                case "atualizarPessoa":
-                    pessoaService.atualizar((Pessoa) request.getData());
-                    return new ResponseObject(true, "Pessoa atualizada com sucesso", null);
-                case "excluirPessoa":
-                    pessoaService.excluir((int) request.getData());
-                    return new ResponseObject(true, "Pessoa excluída com sucesso", null);
-                case "listarTodosPessoa":
-                    return new ResponseObject(true, "", pessoaService.listarTodos());
-                case "login":
-                    return pessoaService.login((Pessoa) request.getData());
-
-                // Operações para Equipe
-                case "criarEquipe":
-                    equipeService.criar((Equipe) request.getData());
-                    return new ResponseObject(true, "Equipe criada com sucesso", null);
-                case "lerEquipe":
-                    return new ResponseObject(true, "", equipeService.ler((int) request.getData()));
-                case "atualizarEquipe":
-                    equipeService.atualizar((Equipe) request.getData());
-                    return new ResponseObject(true, "Equipe atualizada com sucesso", null);
-                case "excluirEquipe":
-                    equipeService.excluir((int) request.getData());
-                    return new ResponseObject(true, "Equipe excluída com sucesso", null);
-                case "listarTodosEquipe":
-                    return new ResponseObject(true, "", equipeService.listarTodos());
-
-                // Operações para Projeto
-                case "criarProjeto":
-                    projetoService.criar((Projeto) request.getData());
-                    return new ResponseObject(true, "Projeto criado com sucesso", null);
-                case "lerProjeto":
-                    return new ResponseObject(true, "", projetoService.ler((int) request.getData()));
-                case "atualizarProjeto":
-                    projetoService.atualizar((Projeto) request.getData());
-                    return new ResponseObject(true, "Projeto atualizado com sucesso", null);
-                case "excluirProjeto":
-                    projetoService.excluir((int) request.getData());
-                    return new ResponseObject(true, "Projeto excluído com sucesso", null);
-                case "listarTodosProjeto":
-                    return new ResponseObject(true, "", projetoService.listarTodos());
-
-                // Operações para Tarefa
-                case "criarTarefa":
-                    tarefaService.criar((Tarefa) request.getData());
-                    return new ResponseObject(true, "Tarefa criada com sucesso", null);
-                case "lerTarefa":
-                    return new ResponseObject(true, "", tarefaService.ler((int) request.getData()));
-                case "atualizarTarefa":
-                    tarefaService.atualizar((Tarefa) request.getData());
-                    return new ResponseObject(true, "Tarefa atualizada com sucesso", null);
-                case "excluirTarefa":
-                    tarefaService.excluir((int) request.getData());
-                    return new ResponseObject(true, "Tarefa excluída com sucesso", null);
-                case "listarTodosTarefa":
-                    return new ResponseObject(true, "", tarefaService.listarTodos());
-
-                // Operações para Anexo
-                case "criarAnexo":
-                    anexoService.criar((Anexo) request.getData());
-                    return new ResponseObject(true, "Anexo criado com sucesso", null);
-                case "lerAnexo":
-                    return new ResponseObject(true, "", anexoService.ler((int) request.getData()));
-                case "atualizarAnexo":
-                    anexoService.atualizar((Anexo) request.getData());
-                    return new ResponseObject(true, "Anexo atualizado com sucesso", null);
-                case "excluirAnexo":
-                    anexoService.excluir((int) request.getData());
-                    return new ResponseObject(true, "Anexo excluído com sucesso", null);
-                case "listarTodosAnexo":
-                    return new ResponseObject(true, "", anexoService.listarTodos());
-
-                default:
-                    return new ResponseObject(false, "Operação não suportada", null);
-            }
-        } catch (Exception e) {
-            return new ResponseObject(false, "Erro ao processar a requisição: " + e.getMessage(), null);
-        }
-    }
-}
-
-
-----------------------------------------------------
- String usuarioInserido = jTextFieldNomeUsuario.getText();
-        String senhaInserida = jTextFieldSenha.getText();
-
-        ConexaoController conexao = new ConexaoController();
-        ResponseObject response = conexao.sendLoginRequest(usuarioInserido, senhaInserida);
-
-        if (response.isSuccess()) {
-            TelaMenu TLMenu = new TelaMenu();
-            TLMenu.setVisible(true);
-            System.out.println("certo "+response);
-        } else {
-            jLabelContaNaoExiste.setVisible(true);
-            System.out.println("errado "+response);
-        }
-
---------------------------------------------------------
-
 package controller;
 
 import com.example.common.utils.RequestObject;
@@ -197,53 +13,85 @@ public class ConexaoController {
 
     private final String SERVER_ADDRESS = "127.0.0.1";
     private final int SERVER_PORT = 8080;
+    private Socket socket;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+    private boolean isConnected = false;
+    private static final String TAG = "ConexaoController";
 
-    public static void main(String[] args) {
-        ConexaoController client = new ConexaoController();
+    public ConexaoController() {
+        this.isConnected = connect();
+    }
 
+    private boolean connect() {
+        try {
+            System.out.println(TAG + ": Tentando conectar...");
+            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+            System.out.println(TAG + ": Conectado com sucesso.");
+            isConnected = true;
+        } catch (IOException e) {
+            System.err.println(TAG + ": Erro ao conectar. " + e.getMessage());
+            isConnected = false;
+        }
+
+        return isConnected;
     }
 
     public ResponseObject sendRequest(RequestObject request) {
-        try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+        if (!isConnected) {
+            System.out.println(TAG + ": Não está conectado. Tentando reconectar...");
+            isConnected = connect();
+            if (!isConnected) {
+                System.err.println(TAG + ": Falha ao reconectar.");
+                return new ResponseObject(false, "Falha ao reconectar.", null);
+            }
+        }
 
-            System.out.println("Sending request to server...");
+        try {
+            System.out.println(TAG + ": Enviando requisição...");
             out.writeObject(request);
             out.flush();
+            System.out.println(TAG + ": Requisição enviada. Aguardando resposta...");
 
             Object response = in.readObject();
             if (response instanceof ResponseObject) {
                 return (ResponseObject) response;
             } else {
-                return new ResponseObject(false, "Invalid response from server", null);
+                System.err.println(TAG + ": Resposta inválida do servidor.");
+                return new ResponseObject(false, "Resposta inválida do servidor.", null);
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new ResponseObject(false, "Error: " + e.getMessage(), null);
+        } catch (Exception e) {
+            System.err.println(TAG + ": Erro ao enviar requisição ou ao receber resposta: " + e.getMessage());
+            isConnected = false;
+            return new ResponseObject(false, "Erro ao enviar requisição ou ao receber resposta: " + e.getMessage(), null);
         }
     }
 
     public ResponseObject sendLoginRequest(String username, String password) {
-        System.out.println("Sending login request for user: " + username);
-
-        // Cria um objeto Pessoa para enviar como dado da requisição
+        System.out.println(TAG + ": Enviando requisição de login para o usuário: " + username);
         Pessoa user = new Pessoa(username, password);
-
         RequestObject request = new RequestObject("login", user);
         return sendRequest(request);
     }
+
+    public void closeConnection() {
+        try {
+            System.out.println(TAG + ": Fechando conexão...");
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+            isConnected = false;
+            System.out.println(TAG + ": Conexão fechada.");
+        } catch (IOException e) {
+            System.err.println(TAG + ": Erro ao fechar conexão: " + e.getMessage());
+        }
+    }
 }
-
---------------------------------------------------------------
-
-Servidor iniciado na porta 8080
-Cliente conectado: /127.0.0.1:61674
-Requisi��o recebida: login
-Conex�o finalizada pelo cliente
-java.io.EOFException
-	at java.base/java.io.ObjectInputStream$BlockDataInputStream.peekByte(ObjectInputStream.java:3255)
-	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1719)
-	at java.base/java.io.ObjectInputStream.readObject(ObjectInputStream.java:543)
-	at java.base/java.io.ObjectInputStream.readObject(ObjectInputStream.java:501)
-	at com.example.server.ServerMain.handleClient(ServerMain.java:54)
-	at com.example.server.ServerMain.lambda$main$0(ServerMain.java:39)
-	at java.base/java.lang.Thread.run(Thread.java:833)
