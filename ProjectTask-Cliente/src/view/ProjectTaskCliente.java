@@ -1,7 +1,7 @@
 package view;
 
-import utils.RequestObject;
-import utils.ResponseObject;
+import com.example.common.utils.RequestObject;
+import com.example.common.utils.ResponseObject;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

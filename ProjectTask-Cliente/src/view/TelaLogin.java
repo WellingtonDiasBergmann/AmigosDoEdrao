@@ -1,14 +1,16 @@
 package view;
 
-import modelDominio.Pessoa;
-import utils.RequestObject;
-import utils.ResponseObject;
+import com.example.common.model.Pessoa;
+import com.example.common.utils.RequestObject;
+import com.example.common.utils.ResponseObject;
+import controller.ConexaoController;
 
 public class TelaLogin extends javax.swing.JFrame {
 
     public TelaLogin() {
         initComponents();
         jLabelContaNaoExiste.setVisible(false);
+        ConexaoController ConexaoController = new ConexaoController();
     }
 
     /**
@@ -33,25 +35,22 @@ public class TelaLogin extends javax.swing.JFrame {
         jTextFieldSenha = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(237, 242, 250));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(0, 0, 0));
         jLabel1.setText("Bem-vindo de volta");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 17)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 0, 0));
         jLabel3.setText("Entre na sua conta para continuar.");
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 17)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
         jLabel4.setText("E-mail ou Nome de Usuário:");
 
         jTextFieldNomeUsuario.setBackground(new java.awt.Color(217, 217, 217));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 17)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(0, 0, 0));
         jLabel5.setText("Senha");
 
         jButtonLogar.setBackground(new java.awt.Color(120, 88, 242));
@@ -65,7 +64,6 @@ public class TelaLogin extends javax.swing.JFrame {
         });
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel6.setForeground(new java.awt.Color(0, 0, 0));
         jLabel6.setText("Esqueceu sua senha?");
 
         jLabelEsqueceuSenha.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -148,24 +146,25 @@ public class TelaLogin extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonLogarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogarActionPerformed
         //BOTAO LOGAR
-        String emailInserido = jTextFieldNomeUsuario.getText();
+
+        String usuarioInserido = jTextFieldNomeUsuario.getText();
         String senhaInserida = jTextFieldSenha.getText();
 
-        Pessoa pessoa = new Pessoa(emailInserido, senhaInserida);
-        RequestObject request = new RequestObject("login", pessoa);
-
-        ProjectTaskCliente cliente = new ProjectTaskCliente("localhost", 8080);
-        ResponseObject response = cliente.enviarRequisicao(request);
+        ConexaoController conexao = new ConexaoController();
+        ResponseObject response = conexao.sendLoginRequest(usuarioInserido, senhaInserida);
 
         if (response.isSuccess()) {
             TelaMenu TLMenu = new TelaMenu();
             TLMenu.setVisible(true);
+            System.out.println("certo " + response);
         } else {
             jLabelContaNaoExiste.setVisible(true);
+            System.out.println("errado " + response);
         }
 
     }//GEN-LAST:event_jButtonLogarActionPerformed

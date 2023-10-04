@@ -4,7 +4,7 @@
  */
 package view;
 
-import utils.RequestObject;
+import com.example.common.utils.RequestObject;
 
 public class TelaMenu extends javax.swing.JFrame {
 
